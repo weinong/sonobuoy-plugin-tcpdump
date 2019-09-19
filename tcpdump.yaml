@@ -1,0 +1,29 @@
+podSpec:
+  containers: []
+  serviceAccountName: sonobuoy-serviceaccount
+  hostNetwork: true
+  tolerations:
+  - operator: Exists
+sonobuoy-config:
+  driver: DaemonSet
+  plugin-name: tcpdump
+spec:
+  command:
+  - "/bin/sh"
+  - "-c"
+  - |
+    timeout 60s tcpdump -nn -w capture.pcap
+    tar zcf /tmp/results/result.tar.gz capture.pcap
+    printf /tmp/results/result.tar.gz > /tmp/results/done
+  image: corfr/tcpdump
+  name: tcpdump
+  env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  resources: {}
+  volumeMounts:
+  - mountPath: /tmp/results
+    name: results
+
